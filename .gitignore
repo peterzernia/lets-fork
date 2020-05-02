@@ -1,0 +1,7 @@
+# Go
+app
+
+# misc
+.env
+.vscode
+.DS_Store

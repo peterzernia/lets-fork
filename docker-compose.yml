@@ -1,0 +1,13 @@
+version: "3.3"
+
+services:
+  app:
+    build: .
+    command: gaper --ignore client
+    env_file: .env
+    environment:
+      CGO_ENABLED: 0
+    volumes:
+      - .:/go/src/github.com/peterzernia/app
+    ports:
+      - "8003:8003"
