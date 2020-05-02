@@ -8,17 +8,17 @@ import (
 	"github.com/peterzernia/app/restaurant"
 )
 
-func (h *Hub) handleCreate(conn *websocket.Conn) *Party {
+func (h *Hub) handleCreate(c *Client) *Party {
 	party := Party{
 		ID:    ptr.Int64(int64(len(h.parties)) + 1),
-		Conns: []*websocket.Conn{conn},
+		Conns: []*websocket.Conn{c.conn},
 	}
+	party.Likes = make(map[*websocket.Conn][]string)
+	party.Likes[c.conn] = []string{}
 
-	for client := range h.clients {
-		if client.conn == conn {
-			client.partyID = party.ID
-		}
-	}
+	party.Matches = []restaurant.Restaurant{}
+
+	c.partyID = party.ID
 
 	parties := append(h.parties, party)
 	h.parties = parties
@@ -26,13 +26,16 @@ func (h *Hub) handleCreate(conn *websocket.Conn) *Party {
 	return &party
 }
 
-func (h *Hub) handleJoin(message Message, conn *websocket.Conn) ([]restaurant.Restaurant, *Party) {
-	if id, ok := message.Payload["id"].(string); ok {
-		for _, party := range h.parties {
+func (h *Hub) handleJoin(message Message, c *Client) ([]restaurant.Restaurant, *Party) {
+	if id, ok := message.Payload["party_id"].(string); ok {
+		for i, party := range h.parties {
 			ID, err := strconv.ParseInt(id, 10, 64)
+
 			if err == nil && *party.ID == ID {
-				conns := append(party.Conns, conn)
-				party.Conns = conns
+				c.partyID = party.ID
+				conns := append(party.Conns, c.conn)
+				h.parties[i].Conns = conns
+				h.parties[i].Likes[c.conn] = []string{}
 
 				options := restaurant.Options{
 					Latitude:  ptr.Float64(52.492495),
@@ -44,12 +47,32 @@ func (h *Hub) handleJoin(message Message, conn *websocket.Conn) ([]restaurant.Re
 				search, err := restaurant.HandleList(options)
 
 				if err == nil {
-					party.Remaining = ptr.Int64(*search.Total - int64(len(search.Businesses)))
-					return search.Businesses, &party
+					h.parties[i].Remaining = ptr.Int64(*search.Total - int64(len(search.Businesses)))
+					h.parties[i].Current = search.Businesses
+					h.parties[i].Restaurants = search.Businesses
+					return search.Businesses, &h.parties[i]
 				}
 			}
 		}
 	}
 
 	return nil, nil
+}
+
+func (h *Hub) handleSwipRight(message Message, c *Client) *Party {
+	for i, party := range h.parties {
+		if *party.ID == *c.partyID {
+			if id, ok := message.Payload["restaurant_id"].(string); ok {
+				h.parties[i].Likes[c.conn] = append(party.Likes[c.conn], id)
+			}
+
+			matches := party.checkMatches()
+			if matches != nil {
+				h.parties[i].Matches = matches
+				return &h.parties[i]
+			}
+		}
+	}
+
+	return nil
 }

@@ -75,20 +75,39 @@ func (c *Client) read() {
 		response := Response{}
 		switch message.Type {
 		case "create":
-			party := c.hub.handleCreate(c.conn)
-			res, _ := json.Marshal(c.hub.parties)
+			party := c.hub.handleCreate(c)
+			res, err := json.Marshal(party)
+			if err != nil {
+				log.Println(err)
+			}
 			response.Res = res
 			response.Conns = party.Conns
 		case "join":
-			restauraunts, party := c.hub.handleJoin(message, c.conn)
+			restauraunts, party := c.hub.handleJoin(message, c)
 			if party != nil {
-				res, _ := json.Marshal(restauraunts)
+				res, err := json.Marshal(restauraunts)
+				if err != nil {
+					log.Println(err)
+				}
 				response.Res = res
 				response.Conns = party.Conns
 			} else {
-				res, _ := json.Marshal("invalid party")
+				res, err := json.Marshal("invalid party")
+				if err != nil {
+					log.Println(err)
+				}
 				response.Res = res
 				response.Conns = []*websocket.Conn{c.conn}
+			}
+		case "swipe-right":
+			party := c.hub.handleSwipRight(message, c)
+			if party != nil {
+				res, err := json.Marshal(party)
+				if err != nil {
+					log.Println(err)
+				}
+				response.Res = res
+				response.Conns = party.Conns
 			}
 		default:
 			res := []byte("Unrecognized message type" + message.Type)

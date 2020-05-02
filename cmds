@@ -1,0 +1,8 @@
+create
+{ "type": "create" }
+
+join
+{ "type": "join", "payload": { "party_id": "1" } }
+
+swipe-right
+{ "type": "swipe-right", "payload": { "restaurant_id": "Eh1G22YVPz2Cz9FKA2vF3w" } }
