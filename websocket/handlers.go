@@ -1,6 +1,8 @@
 package websocket
 
 import (
+	"encoding/json"
+	"log"
 	"strconv"
 
 	"github.com/gorilla/websocket"
@@ -8,7 +10,14 @@ import (
 	"github.com/peterzernia/app/restaurant"
 )
 
-func (h *Hub) handleCreate(c *Client) *Party {
+// golang cannot unmarshal json into float fields
+type options struct {
+	Latitude  string `json:"latitude"`
+	Longitude string `json:"longitude"`
+	Radius    string `json:"radius"`
+}
+
+func (h *Hub) handleCreate(message Message, c *Client) *Party {
 	party := Party{
 		ID:    ptr.Int64(int64(len(h.parties)) + 1),
 		Conns: []*websocket.Conn{c.conn},
@@ -17,6 +26,30 @@ func (h *Hub) handleCreate(c *Client) *Party {
 	party.Likes[c.conn] = []string{}
 
 	party.Matches = []restaurant.Restaurant{}
+
+	// Set options with workaround for *float64 fields
+	options := options{}
+	j, err := json.Marshal(message.Payload)
+	if err != nil {
+		log.Println(err, 1)
+	}
+
+	err = json.Unmarshal(j, &options)
+	if err != nil {
+		log.Println(err, 2)
+	}
+
+	lat, _ := strconv.ParseFloat(options.Latitude, 64)
+	long, _ := strconv.ParseFloat(options.Longitude, 64)
+	rad, _ := strconv.ParseFloat(options.Radius, 64)
+
+	party.Options = &restaurant.Options{
+		Latitude:  ptr.Float64(lat),
+		Longitude: ptr.Float64(long),
+		Limit:     ptr.Int64(50),
+		Offset:    ptr.Int64(0),
+		Radius:    ptr.Float64(rad),
+	}
 
 	c.partyID = party.ID
 
@@ -37,14 +70,7 @@ func (h *Hub) handleJoin(message Message, c *Client) ([]restaurant.Restaurant, *
 				h.parties[i].Conns = conns
 				h.parties[i].Likes[c.conn] = []string{}
 
-				options := restaurant.Options{
-					Latitude:  ptr.Float64(52.492495),
-					Longitude: ptr.Float64(13.393264),
-					Limit:     ptr.Int64(50),
-					Offset:    ptr.Int64(0),
-					Radius:    ptr.Float64(1000),
-				}
-				search, err := restaurant.HandleList(options)
+				search, err := restaurant.HandleList(*party.Options)
 
 				if err == nil {
 					h.parties[i].Remaining = ptr.Int64(*search.Total - int64(len(search.Businesses)))

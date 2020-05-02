@@ -58,6 +58,7 @@ func HandleList(options Options) (*SearchResponse, error) {
 	// Add query parameters
 	q := req.URL.Query()
 	q.Add("categories", "restaurants")
+	q.Add("open_now", "true")
 	q.Add("latitude", strconv.FormatFloat(*options.Latitude, 'f', -1, 64))
 	q.Add("longitude", strconv.FormatFloat(*options.Longitude, 'f', -1, 64))
 	q.Add("limit", strconv.FormatInt(*options.Limit, 10))

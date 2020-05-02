@@ -75,7 +75,7 @@ func (c *Client) read() {
 		response := Response{}
 		switch message.Type {
 		case "create":
-			party := c.hub.handleCreate(c)
+			party := c.hub.handleCreate(message, c)
 			res, err := json.Marshal(party)
 			if err != nil {
 				log.Println(err)

@@ -1,8 +1,6 @@
 package websocket
 
 import (
-	"fmt"
-
 	"github.com/gorilla/websocket"
 	"github.com/peterzernia/app/restaurant"
 )
@@ -17,6 +15,7 @@ type Party struct {
 	Likes map[*websocket.Conn][]string `json:"-"`
 
 	Matches []restaurant.Restaurant `json:"matches,omitempty"`
+	Options *restaurant.Options     `json:"-"`
 
 	// Remaining restaurants that have not been fetched
 	Remaining   *int64                  `json:"-"`
@@ -31,7 +30,7 @@ func (p *Party) checkMatches() []restaurant.Restaurant {
 			counts[restaurantID]++
 		}
 	}
-	fmt.Println(counts)
+
 	for restaurantID, count := range counts {
 		if count == len(p.Conns) {
 			exists := false
