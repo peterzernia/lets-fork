@@ -80,9 +80,9 @@ func (c *Client) read() {
 			response.Res = res
 			response.Conns = party.Conns
 		case "join":
-			party := c.hub.handleJoin(message, c.conn)
+			restauraunts, party := c.hub.handleJoin(message, c.conn)
 			if party != nil {
-				res, _ := json.Marshal(c.hub.parties)
+				res, _ := json.Marshal(restauraunts)
 				response.Res = res
 				response.Conns = party.Conns
 			} else {

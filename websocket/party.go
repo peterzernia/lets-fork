@@ -6,4 +6,7 @@ import "github.com/gorilla/websocket"
 type Party struct {
 	ID    *int64            `json:"id"`
 	Conns []*websocket.Conn `json:"-"`
+
+	// Remaining restauraunts that have not been fetched
+	Remaining *int64 `json:"-"`
 }

@@ -1,11 +1,11 @@
 package websocket
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/gorilla/websocket"
 	"github.com/peterzernia/app/ptr"
+	"github.com/peterzernia/app/restaurant"
 )
 
 func (h *Hub) handleCreate(conn *websocket.Conn) *Party {
@@ -26,19 +26,30 @@ func (h *Hub) handleCreate(conn *websocket.Conn) *Party {
 	return &party
 }
 
-func (h *Hub) handleJoin(message Message, conn *websocket.Conn) *Party {
-	fmt.Println(message.Payload)
+func (h *Hub) handleJoin(message Message, conn *websocket.Conn) ([]restaurant.Restaurant, *Party) {
 	if id, ok := message.Payload["id"].(string); ok {
 		for _, party := range h.parties {
 			ID, err := strconv.ParseInt(id, 10, 64)
 			if err == nil && *party.ID == ID {
 				conns := append(party.Conns, conn)
 				party.Conns = conns
-			}
 
-			return &party
+				options := restaurant.Options{
+					Latitude:  ptr.Float64(52.492495),
+					Longitude: ptr.Float64(13.393264),
+					Limit:     ptr.Int64(50),
+					Offset:    ptr.Int64(0),
+					Radius:    ptr.Float64(1000),
+				}
+				search, err := restaurant.HandleList(options)
+
+				if err == nil {
+					party.Remaining = ptr.Int64(*search.Total - int64(len(search.Businesses)))
+					return search.Businesses, &party
+				}
+			}
 		}
 	}
 
-	return nil
+	return nil, nil
 }
