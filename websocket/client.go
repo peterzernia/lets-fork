@@ -79,6 +79,17 @@ func (c *Client) read() {
 			res, _ := json.Marshal(c.hub.parties)
 			response.Res = res
 			response.Conns = party.Conns
+		case "join":
+			party := c.hub.handleJoin(message, c.conn)
+			if party != nil {
+				res, _ := json.Marshal(c.hub.parties)
+				response.Res = res
+				response.Conns = party.Conns
+			} else {
+				res, _ := json.Marshal("invalid party")
+				response.Res = res
+				response.Conns = []*websocket.Conn{c.conn}
+			}
 		default:
 			res := []byte("Unrecognized message type" + message.Type)
 			log.Println("Unrecognized message type" + message.Type)
