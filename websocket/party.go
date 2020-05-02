@@ -18,9 +18,9 @@ type Party struct {
 	Likes       map[*websocket.Conn][]string `json:"-"`
 	Matches     []restaurant.Restaurant      `json:"matches,omitempty"`
 	Options     *restaurant.Options          `json:"-"`
-	Remaining   *int64                       `json:"-"`
 	Restaurants []restaurant.Restaurant      `json:"restaurants,omitempty"`
 	Status      *string                      `json:"status"`
+	Total       *int64                       `json:"total,omitempty"`
 }
 
 // Checks if any restaurant is liked by all the users

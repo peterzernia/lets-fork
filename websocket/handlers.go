@@ -76,7 +76,7 @@ func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn)
 
 					if err == nil {
 						h.parties[i].Current = search.Businesses
-						h.parties[i].Remaining = ptr.Int64(*search.Total - int64(len(search.Businesses)))
+						h.parties[i].Total = search.Total
 						h.parties[i].Restaurants = search.Businesses
 						h.parties[i].Status = ptr.String("active")
 						return &h.parties[i], h.parties[i].Conns
@@ -106,6 +106,26 @@ func (h *Hub) handleSwipRight(message Message, c *Client) *Party {
 			if matches != nil {
 				h.parties[i].Matches = matches
 				return &h.parties[i]
+			}
+		}
+	}
+
+	return nil
+}
+
+func (h *Hub) handleRequestMore(message Message, c *Client) *Party {
+	for i, party := range h.parties {
+		if *party.ID == *c.partyID {
+			// Fetch more restaurants when they have not all been fetched
+			if *party.Total-int64(len(party.Restaurants)) > 0 {
+				h.parties[i].Options.Offset = ptr.Int64(int64(len(party.Current)))
+				search, err := restaurant.HandleList(*party.Options)
+
+				if err == nil {
+					h.parties[i].Current = search.Businesses
+					h.parties[i].Restaurants = append(party.Restaurants, search.Businesses...)
+					return &h.parties[i]
+				}
 			}
 		}
 	}

@@ -109,6 +109,16 @@ func (c *Client) read() {
 				response.Res = res
 				response.Conns = party.Conns
 			}
+		case "request-more":
+			party := c.hub.handleRequestMore(message, c)
+			if party != nil {
+				res, err := json.Marshal(party)
+				if err != nil {
+					log.Println(err)
+				}
+				response.Res = res
+				response.Conns = party.Conns
+			}
 		default:
 			res := []byte("Unrecognized message type" + message.Type)
 			log.Println("Unrecognized message type" + message.Type)
