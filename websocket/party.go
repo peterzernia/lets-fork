@@ -7,19 +7,20 @@ import (
 
 // Party represents 2+ users
 type Party struct {
-	ID      *int64                  `json:"id"`
-	Conns   []*websocket.Conn       `json:"-"`
-	Current []restaurant.Restaurant `json:"-"`
+	ID    *int64            `json:"id"`
+	Conns []*websocket.Conn `json:"-"`
+
+	// Current 'batch' of fetched restaurants
+	// to be added to the clients list of restaurants
+	Current []restaurant.Restaurant `json:"current,omitempty"`
 
 	// Keep track of which restauraunts have been swiped right on by conn
-	Likes map[*websocket.Conn][]string `json:"-"`
-
-	Matches []restaurant.Restaurant `json:"matches,omitempty"`
-	Options *restaurant.Options     `json:"-"`
-
-	// Remaining restaurants that have not been fetched
-	Remaining   *int64                  `json:"-"`
-	Restaurants []restaurant.Restaurant `json:"-"`
+	Likes       map[*websocket.Conn][]string `json:"-"`
+	Matches     []restaurant.Restaurant      `json:"matches,omitempty"`
+	Options     *restaurant.Options          `json:"-"`
+	Remaining   *int64                       `json:"-"`
+	Restaurants []restaurant.Restaurant      `json:"restaurants,omitempty"`
+	Status      *string                      `json:"status"`
 }
 
 // Checks if any restaurant is liked by all the users

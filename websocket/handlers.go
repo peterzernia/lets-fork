@@ -46,11 +46,12 @@ func (h *Hub) handleCreate(message Message, c *Client) *Party {
 	party.Options = &restaurant.Options{
 		Latitude:  ptr.Float64(lat),
 		Longitude: ptr.Float64(long),
-		Limit:     ptr.Int64(50),
+		Limit:     ptr.Int64(1),
 		Offset:    ptr.Int64(0),
 		Radius:    ptr.Float64(rad),
 	}
 
+	party.Status = ptr.String("waiting")
 	c.partyID = party.ID
 
 	parties := append(h.parties, party)
@@ -59,7 +60,7 @@ func (h *Hub) handleCreate(message Message, c *Client) *Party {
 	return &party
 }
 
-func (h *Hub) handleJoin(message Message, c *Client) ([]restaurant.Restaurant, *Party) {
+func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn) {
 	if id, ok := message.Payload["party_id"].(string); ok {
 		for i, party := range h.parties {
 			ID, err := strconv.ParseInt(id, 10, 64)
@@ -70,13 +71,22 @@ func (h *Hub) handleJoin(message Message, c *Client) ([]restaurant.Restaurant, *
 				h.parties[i].Conns = conns
 				h.parties[i].Likes[c.conn] = []string{}
 
-				search, err := restaurant.HandleList(*party.Options)
+				if len(party.Conns) == 1 { // Only the host is in the party
+					search, err := restaurant.HandleList(*party.Options)
 
-				if err == nil {
-					h.parties[i].Remaining = ptr.Int64(*search.Total - int64(len(search.Businesses)))
-					h.parties[i].Current = search.Businesses
-					h.parties[i].Restaurants = search.Businesses
-					return search.Businesses, &h.parties[i]
+					if err == nil {
+						h.parties[i].Current = search.Businesses
+						h.parties[i].Remaining = ptr.Int64(*search.Total - int64(len(search.Businesses)))
+						h.parties[i].Restaurants = search.Businesses
+						h.parties[i].Status = ptr.String("active")
+						return &h.parties[i], h.parties[i].Conns
+					}
+				} else {
+					// Reset matches when new user joins
+					h.parties[i].Matches = []restaurant.Restaurant{}
+
+					// Only send to new user
+					return &h.parties[i], []*websocket.Conn{c.conn}
 				}
 			}
 		}

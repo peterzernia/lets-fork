@@ -83,14 +83,14 @@ func (c *Client) read() {
 			response.Res = res
 			response.Conns = party.Conns
 		case "join":
-			restauraunts, party := c.hub.handleJoin(message, c)
-			if party != nil {
-				res, err := json.Marshal(restauraunts)
+			party, conns := c.hub.handleJoin(message, c)
+			if conns != nil {
+				res, err := json.Marshal(party)
 				if err != nil {
 					log.Println(err)
 				}
 				response.Res = res
-				response.Conns = party.Conns
+				response.Conns = conns
 			} else {
 				res, err := json.Marshal("invalid party")
 				if err != nil {
