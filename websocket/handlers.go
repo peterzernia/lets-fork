@@ -135,13 +135,21 @@ func (h *Hub) handleRequestMore(message Message, c *Client) *Party {
 
 func (h *Hub) handleQuit(c *Client) *Party {
 	var index int
+	var jndex int
 	for i, party := range h.parties {
 		if *party.ID == *c.partyID {
 			index = i
+			for j, conn := range party.Conns {
+				if c.conn == conn {
+					jndex = j
+				}
+			}
 		}
 	}
+	c.partyID = nil
+
 	// Remove connection from party
-	h.parties[index].Conns[index] = h.parties[index].Conns[len(h.parties[index].Conns)-1]
+	h.parties[index].Conns[jndex] = h.parties[index].Conns[len(h.parties[index].Conns)-1]
 	h.parties[index].Conns = h.parties[index].Conns[:len(h.parties[index].Conns)-1]
 
 	// Remove party if no connection

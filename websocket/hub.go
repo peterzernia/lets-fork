@@ -1,7 +1,5 @@
 package websocket
 
-import "github.com/peterzernia/lets-fork/ptr"
-
 // Hub ...
 type Hub struct {
 	// Registered clients.
@@ -55,15 +53,12 @@ func (h *Hub) Run() {
 									break
 								}
 							}
-							h.parties[i].Conns[index] = party.Conns[len(party.Conns)-1]
-							h.parties[i].Conns = party.Conns[:len(party.Conns)-1]
+							party.Conns[index] = party.Conns[len(party.Conns)-1]
+							party.Conns = party.Conns[:len(party.Conns)-1]
 
 							if len(party.Conns) == 0 {
 								h.parties[i] = h.parties[len(h.parties)-1]
 								h.parties = h.parties[:len(h.parties)-1]
-							}
-							if len(h.parties[index].Conns) == 1 {
-								h.parties[index].Status = ptr.String("waiting")
 							}
 						}
 					}
@@ -93,15 +88,12 @@ func (h *Hub) Run() {
 												break
 											}
 										}
-										h.parties[i].Conns[index] = party.Conns[len(party.Conns)-1]
-										h.parties[i].Conns = party.Conns[:len(party.Conns)-1]
+										party.Conns[index] = party.Conns[len(party.Conns)-1]
+										party.Conns = party.Conns[:len(party.Conns)-1]
 
 										if len(party.Conns) == 0 {
 											h.parties[i] = h.parties[len(h.parties)-1]
 											h.parties = h.parties[:len(h.parties)-1]
-										}
-										if len(h.parties[index].Conns) == 1 {
-											h.parties[index].Status = ptr.String("waiting")
 										}
 									}
 								}
