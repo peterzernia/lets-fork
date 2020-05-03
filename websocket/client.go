@@ -119,6 +119,16 @@ func (c *Client) read() {
 				response.Res = res
 				response.Conns = party.Conns
 			}
+		case "quit":
+			party := c.hub.handleQuit(c)
+			if party != nil {
+				res, err := json.Marshal(party)
+				if err != nil {
+					log.Println(err)
+				}
+				response.Res = res
+				response.Conns = party.Conns
+			}
 		default:
 			res := []byte("Unrecognized message type" + message.Type)
 			log.Println("Unrecognized message type" + message.Type)

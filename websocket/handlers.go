@@ -46,7 +46,7 @@ func (h *Hub) handleCreate(message Message, c *Client) *Party {
 	party.Options = &restaurant.Options{
 		Latitude:  ptr.Float64(lat),
 		Longitude: ptr.Float64(long),
-		Limit:     ptr.Int64(50),
+		Limit:     ptr.Int64(20),
 		Offset:    ptr.Int64(0),
 		Radius:    ptr.Float64(rad),
 	}
@@ -131,4 +131,29 @@ func (h *Hub) handleRequestMore(message Message, c *Client) *Party {
 	}
 
 	return nil
+}
+
+func (h *Hub) handleQuit(c *Client) *Party {
+	var index int
+	for i, party := range h.parties {
+		if *party.ID == *c.partyID {
+			index = i
+		}
+	}
+	// Remove connection from party
+	h.parties[index].Conns[index] = h.parties[index].Conns[len(h.parties[index].Conns)-1]
+	h.parties[index].Conns = h.parties[index].Conns[:len(h.parties[index].Conns)-1]
+
+	// Remove party if no connection
+	if len(h.parties[index].Conns) == 0 {
+		h.parties[index] = h.parties[len(h.parties)-1]
+		h.parties = h.parties[:len(h.parties)-1]
+		return nil
+	}
+
+	if len(h.parties[index].Conns) == 1 {
+		h.parties[index].Status = ptr.String("waiting")
+	}
+
+	return &h.parties[index]
 }
