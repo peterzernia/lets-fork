@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/gorilla/websocket"
-	"github.com/peterzernia/app/ptr"
-	"github.com/peterzernia/app/restaurant"
+	"github.com/peterzernia/lets-fork/ptr"
+	"github.com/peterzernia/lets-fork/restaurant"
 )
 
 // golang cannot unmarshal json into float fields
@@ -46,7 +46,7 @@ func (h *Hub) handleCreate(message Message, c *Client) *Party {
 	party.Options = &restaurant.Options{
 		Latitude:  ptr.Float64(lat),
 		Longitude: ptr.Float64(long),
-		Limit:     ptr.Int64(1),
+		Limit:     ptr.Int64(50),
 		Offset:    ptr.Int64(0),
 		Radius:    ptr.Float64(rad),
 	}

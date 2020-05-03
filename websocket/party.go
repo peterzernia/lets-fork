@@ -2,7 +2,7 @@ package websocket
 
 import (
 	"github.com/gorilla/websocket"
-	"github.com/peterzernia/app/restaurant"
+	"github.com/peterzernia/lets-fork/restaurant"
 )
 
 // Party represents 2+ users

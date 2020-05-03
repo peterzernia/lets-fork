@@ -9,16 +9,16 @@ up:
 .PHONY: up
 
 lint:
-	$(dc) run --rm app go vet
+	$(dc) run --rm lets-fork go vet
 .PHONY: lint
 
 test:
-	$(dc) run --rm app go test -v ./...
+	$(dc) run --rm lets-fork go test -v ./...
 .PHONY: test
 
-app:
-	$(dc) run --rm app go build
-.PHONY: app
+lets-fork:
+	$(dc) run --rm lets-fork go build
+.PHONY: lets-fork
 
 clean:
 	$(dc) stop

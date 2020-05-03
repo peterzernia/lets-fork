@@ -1,4 +1,4 @@
-module github.com/peterzernia/app
+module github.com/peterzernia/lets-fork
 
 go 1.13
 

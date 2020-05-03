@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/peterzernia/app/restaurant"
-	"github.com/peterzernia/app/websocket"
+	"github.com/peterzernia/lets-fork/restaurant"
+	"github.com/peterzernia/lets-fork/websocket"
 )
 
 func main() {
