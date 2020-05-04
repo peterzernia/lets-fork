@@ -1,5 +1,12 @@
 package websocket
 
+import (
+	"encoding/json"
+	"log"
+
+	"github.com/peterzernia/lets-fork/ptr"
+)
+
 // Hub ...
 type Hub struct {
 	// Registered clients.
@@ -42,25 +49,43 @@ func (h *Hub) Run() {
 
 				// remove conn from party &
 				// and remove party when no remaining connections
-				// [TODO]: handle 1 remaining user
+				var index int
+				var jndex int
 				if client.partyID != nil {
 					for i, party := range h.parties {
 						if *party.ID == *client.partyID {
-							var index int
-							for i, conn := range party.Conns {
+							index = i
+							for j, conn := range party.Conns {
 								if client.conn == conn {
-									index = i
-									break
+									jndex = j
 								}
 							}
-							party.Conns[index] = party.Conns[len(party.Conns)-1]
-							party.Conns = party.Conns[:len(party.Conns)-1]
-
-							if len(party.Conns) == 0 {
-								h.parties[i] = h.parties[len(h.parties)-1]
-								h.parties = h.parties[:len(h.parties)-1]
-							}
 						}
+					}
+					h.parties[index].Conns[jndex] = h.parties[index].Conns[len(h.parties[index].Conns)-1]
+					h.parties[index].Conns = h.parties[index].Conns[:len(h.parties[index].Conns)-1]
+
+					if len(h.parties[index].Conns) == 0 {
+						h.parties[index] = h.parties[len(h.parties)-1]
+						h.parties = h.parties[:len(h.parties)-1]
+					}
+
+					if len(h.parties[index].Conns) == 1 {
+						h.parties[index].Status = ptr.String("waiting")
+
+						// Send the message to the remaining connection
+						// that the party is waiting for more users to join
+						res, err := json.Marshal(h.parties[index])
+						if err != nil {
+							log.Println(err)
+						}
+
+						response := Response{
+							Res:   res,
+							Conns: h.parties[index].Conns,
+						}
+
+						h.broadcast <- response
 					}
 				}
 			}
@@ -77,25 +102,43 @@ func (h *Hub) Run() {
 
 							// remove conn from party &
 							// and remove party when no remaining connections
-							// [TODO]: handle 1 remaining user
+							var index int
+							var jndex int
 							if client.partyID != nil {
 								for i, party := range h.parties {
 									if *party.ID == *client.partyID {
-										var index int
+										index = i
 										for j, conn := range party.Conns {
 											if client.conn == conn {
-												index = j
-												break
+												jndex = j
 											}
 										}
-										party.Conns[index] = party.Conns[len(party.Conns)-1]
-										party.Conns = party.Conns[:len(party.Conns)-1]
-
-										if len(party.Conns) == 0 {
-											h.parties[i] = h.parties[len(h.parties)-1]
-											h.parties = h.parties[:len(h.parties)-1]
-										}
 									}
+								}
+								h.parties[index].Conns[jndex] = h.parties[index].Conns[len(h.parties[index].Conns)-1]
+								h.parties[index].Conns = h.parties[index].Conns[:len(h.parties[index].Conns)-1]
+
+								if len(h.parties[index].Conns) == 0 {
+									h.parties[index] = h.parties[len(h.parties)-1]
+									h.parties = h.parties[:len(h.parties)-1]
+								}
+
+								if len(h.parties[index].Conns) == 1 {
+									h.parties[index].Status = ptr.String("waiting")
+
+									// Send the message to the remaining connection
+									// that the party is waiting for more users to join
+									res, err := json.Marshal(h.parties[index])
+									if err != nil {
+										log.Println(err)
+									}
+
+									response := Response{
+										Res:   res,
+										Conns: h.parties[index].Conns,
+									}
+
+									h.broadcast <- response
 								}
 							}
 						}
