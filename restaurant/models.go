@@ -17,21 +17,44 @@ type SearchResponse struct {
 
 // Restaurant represents a restaurant
 type Restaurant struct {
-	Alias *string `json:"alias"`
-	// Categories   []Categories `json:"categories"`
-	// Coordinates  *Coordinates `json:"coordinates"`
-	DisplayPhone *string `json:"display_phone"`
+	Alias        *string      `json:"alias"`
+	Categories   []Category   `json:"categories"`
+	Coordinates  *Coordinates `json:"coordinates"`
+	DisplayPhone *string      `json:"display_phone"`
 	// Hours        *Hours       `json:"hours"`
-	ID        *string `json:"id"`
-	ImageURL  *string `json:"image_url"`
-	IsClaimed *bool   `json:"is_claimed"`
-	IsClosed  *bool   `json:"is_closed"`
-	// Location  *Location `json:"location"`
-	Name         *string  `json:"name"`
-	Phone        *string  `json:"string"`
-	Photos       []string `json:"photos"`
-	Price        *string  `json:"price"`
-	Rating       *float64 `json:"rating"`
-	Transactions []string `json:"transactions"`
-	URL          *string  `json:"url"`
+	ID           *string   `json:"id"`
+	ImageURL     *string   `json:"image_url"`
+	IsClaimed    *bool     `json:"is_claimed"`
+	IsClosed     *bool     `json:"is_closed"`
+	Location     *Location `json:"location"`
+	Name         *string   `json:"name"`
+	Phone        *string   `json:"string"`
+	Photos       []string  `json:"photos"`
+	Price        *string   `json:"price"`
+	Rating       *float64  `json:"rating"`
+	Transactions []string  `json:"transactions"`
+	URL          *string   `json:"url"`
+}
+
+// Category represents a restaurant category
+type Category struct {
+	Alias *string `json:"alias"`
+	Title *string `json:"title"`
+}
+
+// Coordinates is the coordinates of the restaurant
+type Coordinates struct {
+	Latitude  *float64 `json:"latitude"`
+	Longitude *float64 `json:"longitude"`
+}
+
+// Location is the address of the restaurant
+type Location struct {
+	Address1 *string `json:"address1"`
+	Address2 *string `json:"address2"`
+	Address3 *string `json:"address3"`
+	City     *string `json:"city"`
+	Country  *string `json:"country"`
+	State    *string `json:"state"`
+	ZipCode  *string `json:"zip_code"`
 }
