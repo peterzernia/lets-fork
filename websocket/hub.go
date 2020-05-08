@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/peterzernia/lets-fork/ptr"
+	"github.com/peterzernia/lets-fork/utils"
 )
 
 // Hub ...
@@ -147,4 +148,30 @@ func (h *Hub) Run() {
 			}
 		}
 	}
+}
+
+// generatePartyID returns a random 6 digit number as string.
+func (h *Hub) generatePartyID() (string, error) {
+	const letters = "0123456789"
+	bytes, err := utils.GenerateRandomBytes(6)
+	if err != nil {
+		return "", err
+	}
+	for i, b := range bytes {
+		bytes[i] = letters[b%byte(len(letters))]
+	}
+
+	id := string(bytes)
+	for _, party := range h.parties {
+		// Check to make sure id doesn't exist
+		// and run generatePartyID again if it does
+		if id == *party.ID {
+			id, err = h.generatePartyID()
+			if err != nil {
+				return "", err
+			}
+		}
+	}
+
+	return id, nil
 }

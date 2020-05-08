@@ -7,7 +7,7 @@ import (
 
 // Party represents 2+ users
 type Party struct {
-	ID    *int64            `json:"id,omitempty"`
+	ID    *string           `json:"id,omitempty"`
 	Conns []*websocket.Conn `json:"-"`
 
 	// Current 'batch' of fetched restaurants

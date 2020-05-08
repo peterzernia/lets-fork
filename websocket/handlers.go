@@ -20,9 +20,11 @@ type options struct {
 
 func (h *Hub) handleCreate(message Message, c *Client) *Party {
 	party := Party{
-		ID:    ptr.Int64(int64(len(h.parties)) + 1),
 		Conns: []*websocket.Conn{c.conn},
 	}
+	id, _ := h.generatePartyID()
+	party.ID = &id
+
 	party.Likes = make(map[*websocket.Conn][]string)
 	party.Likes[c.conn] = []string{}
 
@@ -65,9 +67,7 @@ func (h *Hub) handleCreate(message Message, c *Client) *Party {
 func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn) {
 	if id, ok := message.Payload["party_id"].(string); ok {
 		for i, party := range h.parties {
-			ID, err := strconv.ParseInt(id, 10, 64)
-
-			if err == nil && *party.ID == ID {
+			if *party.ID == id {
 				c.partyID = party.ID
 				conns := append(party.Conns, c.conn)
 				h.parties[i].Conns = conns
