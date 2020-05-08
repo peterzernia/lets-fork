@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -140,6 +141,7 @@ func (c *Client) read() {
 		}
 
 		c.hub.broadcast <- response
+		fmt.Println(len(c.hub.parties))
 	}
 }
 

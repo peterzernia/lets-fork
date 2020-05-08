@@ -66,12 +66,12 @@ func (h *Hub) Run() {
 					h.parties[index].Conns[jndex] = h.parties[index].Conns[len(h.parties[index].Conns)-1]
 					h.parties[index].Conns = h.parties[index].Conns[:len(h.parties[index].Conns)-1]
 
-					if len(h.parties[index].Conns) == 0 {
+					if index < len(h.parties) && len(h.parties[index].Conns) == 0 {
 						h.parties[index] = h.parties[len(h.parties)-1]
 						h.parties = h.parties[:len(h.parties)-1]
 					}
 
-					if len(h.parties[index].Conns) == 1 {
+					if index < len(h.parties) && len(h.parties[index].Conns) == 1 {
 						h.parties[index].Status = ptr.String("waiting")
 
 						// Send the message to the remaining connection
@@ -119,12 +119,12 @@ func (h *Hub) Run() {
 								h.parties[index].Conns[jndex] = h.parties[index].Conns[len(h.parties[index].Conns)-1]
 								h.parties[index].Conns = h.parties[index].Conns[:len(h.parties[index].Conns)-1]
 
-								if len(h.parties[index].Conns) == 0 {
+								if index < len(h.parties) && len(h.parties[index].Conns) == 0 {
 									h.parties[index] = h.parties[len(h.parties)-1]
 									h.parties = h.parties[:len(h.parties)-1]
 								}
 
-								if len(h.parties[index].Conns) == 1 {
+								if index < len(h.parties) && len(h.parties[index].Conns) == 1 {
 									h.parties[index].Status = ptr.String("waiting")
 
 									// Send the message to the remaining connection
