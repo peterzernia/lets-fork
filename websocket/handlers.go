@@ -101,7 +101,15 @@ func (h *Hub) handleSwipRight(message Message, c *Client) *Party {
 	for i, party := range h.parties {
 		if c.partyID != nil && *party.ID == *c.partyID {
 			if id, ok := message.Payload["restaurant_id"].(string); ok {
-				h.parties[i].Likes[c.conn] = append(party.Likes[c.conn], id)
+				exists := false
+				for _, restaurant := range party.Likes[c.conn] {
+					if restaurant == id {
+						exists = true
+					}
+				}
+				if !exists {
+					h.parties[i].Likes[c.conn] = append(party.Likes[c.conn], id)
+				}
 			}
 
 			matches := party.checkMatches()
