@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -64,6 +65,10 @@ func HandleList(options Options) (*SearchResponse, error) {
 	q.Add("limit", strconv.FormatInt(*options.Limit, 10))
 	q.Add("offset", strconv.FormatInt(*options.Offset, 10))
 	q.Add("radius", strconv.FormatFloat(*options.Radius, 'f', -1, 64))
+	if options.Price != nil {
+		price, _ := json.Marshal(options.Price)
+		q.Add("price", strings.Trim(string(price), "[]"))
+	}
 
 	req.URL.RawQuery = q.Encode()
 

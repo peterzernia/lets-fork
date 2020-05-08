@@ -12,9 +12,10 @@ import (
 
 // golang cannot unmarshal json into float fields
 type options struct {
-	Latitude  string `json:"latitude"`
-	Longitude string `json:"longitude"`
-	Radius    string `json:"radius"`
+	Latitude  string  `json:"latitude"`
+	Longitude string  `json:"longitude"`
+	Radius    string  `json:"radius"`
+	Price     []int64 `json:"price"`
 }
 
 func (h *Hub) handleCreate(message Message, c *Client) *Party {
@@ -49,6 +50,7 @@ func (h *Hub) handleCreate(message Message, c *Client) *Party {
 		Limit:     ptr.Int64(50),
 		Offset:    ptr.Int64(0),
 		Radius:    ptr.Float64(rad),
+		Price:     options.Price,
 	}
 
 	party.Status = ptr.String("waiting")

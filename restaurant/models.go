@@ -7,6 +7,7 @@ type Options struct {
 	Limit     *int64
 	Offset    *int64
 	Radius    *float64
+	Price     []int64
 }
 
 // SearchResponse represents a response from yelp's search endpoint
