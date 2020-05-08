@@ -7,19 +7,20 @@ import (
 
 // Party represents 2+ users
 type Party struct {
-	ID    *int64            `json:"id"`
+	ID    *int64            `json:"id,omitempty"`
 	Conns []*websocket.Conn `json:"-"`
 
 	// Current 'batch' of fetched restaurants
 	// to be added to the clients list of restaurants
 	Current []restaurant.Restaurant `json:"current,omitempty"`
+	Error   *string                 `json:"error,omitempty"`
 
 	// Keep track of which restauraunts have been swiped right on by conn
 	Likes       map[*websocket.Conn][]string `json:"-"`
 	Matches     []restaurant.Restaurant      `json:"matches,omitempty"`
 	Options     *restaurant.Options          `json:"-"`
 	Restaurants []restaurant.Restaurant      `json:"restaurants,omitempty"`
-	Status      *string                      `json:"status"`
+	Status      *string                      `json:"status,omitempty"`
 	Total       *int64                       `json:"total,omitempty"`
 }
 

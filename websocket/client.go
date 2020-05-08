@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/peterzernia/lets-fork/ptr"
 )
 
 const (
@@ -92,7 +93,8 @@ func (c *Client) read() {
 				response.Res = res
 				response.Conns = conns
 			} else {
-				res, err := json.Marshal("invalid party")
+				party := Party{Error: ptr.String("Party does not exist")}
+				res, err := json.Marshal(party)
 				if err != nil {
 					log.Println(err)
 				}
