@@ -67,7 +67,7 @@ func (h *Hub) handleCreate(message Message, c *Client) *Party {
 func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn) {
 	if id, ok := message.Payload["party_id"].(string); ok {
 		for i, party := range h.parties {
-			if *party.ID == id {
+			if party.ID != nil && *party.ID == id {
 				c.partyID = party.ID
 				conns := append(party.Conns, c.conn)
 				h.parties[i].Conns = conns
@@ -99,7 +99,7 @@ func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn)
 
 func (h *Hub) handleSwipRight(message Message, c *Client) *Party {
 	for i, party := range h.parties {
-		if *party.ID == *c.partyID {
+		if c.partyID != nil && *party.ID == *c.partyID {
 			if id, ok := message.Payload["restaurant_id"].(string); ok {
 				h.parties[i].Likes[c.conn] = append(party.Likes[c.conn], id)
 			}
@@ -117,10 +117,10 @@ func (h *Hub) handleSwipRight(message Message, c *Client) *Party {
 
 func (h *Hub) handleRequestMore(message Message, c *Client) *Party {
 	for i, party := range h.parties {
-		if *party.ID == *c.partyID {
+		if c.partyID != nil && *party.ID == *c.partyID {
 			// Fetch more restaurants when they have not all been fetched
 			if *party.Total-int64(len(party.Restaurants)) > 0 {
-				h.parties[i].Options.Offset = ptr.Int64(int64(len(party.Current)))
+				h.parties[i].Options.Offset = ptr.Int64(int64(len(party.Restaurants)))
 				search, err := restaurant.HandleList(*party.Options)
 
 				if err == nil {
@@ -140,7 +140,7 @@ func (h *Hub) handleQuit(c *Client) *Party {
 	var jndex int
 	if c.partyID != nil {
 		for i, party := range h.parties {
-			if *party.ID == *c.partyID {
+			if c.partyID != nil && *party.ID == *c.partyID {
 				index = i
 				for j, conn := range party.Conns {
 					if c.conn == conn {
