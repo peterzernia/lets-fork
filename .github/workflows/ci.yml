@@ -1,0 +1,24 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: touch .env
+      - run: make lint
+      - run: make test
+      - uses: akhileshns/heroku-deploy@v3.0.4
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_APP}}
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+          dontuseforce: false
+          usedocker: false
+          appdir: ""
+          docker_heroku_process_type: "web"
