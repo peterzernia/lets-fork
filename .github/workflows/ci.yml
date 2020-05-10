@@ -10,9 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      # test
       - run: touch .env
       - run: make lint
       - run: make test
+      # deploy
       - uses: akhileshns/heroku-deploy@v3.0.4
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
@@ -22,3 +24,9 @@ jobs:
           usedocker: false
           appdir: ""
           docker_heroku_process_type: "web"
+      # publish
+      - uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: peterzernia/lets-fork
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}

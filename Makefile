@@ -20,6 +20,11 @@ lets-fork:
 	$(dc) run --rm lets-fork go build
 .PHONY: lets-fork
 
+publish:
+	docker tag lets-fork peterzernia/lets-fork
+	docker push peterzernia/lets-fork
+.PHONY: publish
+
 clean:
 	$(dc) stop
 	$(dc) rm -fv
