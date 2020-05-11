@@ -1,18 +1,28 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/peterzernia/lets-fork/restaurant"
+	"github.com/peterzernia/lets-fork/utils"
 	"github.com/peterzernia/lets-fork/websocket"
 )
 
 func main() {
-	hub := websocket.NewHub()
+	rdb, err := utils.InitRDB()
+	if err != nil {
+		log.Println(err)
+	}
 
+	pong, err := rdb.Ping().Result()
+	fmt.Println(pong, err)
+
+	hub := websocket.NewHub()
 	go hub.Run()
 
 	router := gin.Default()

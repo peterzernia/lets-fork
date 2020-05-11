@@ -11,3 +11,14 @@ services:
       - .:/go/src/github.com/peterzernia/lets-fork
     ports:
       - "8003:8003"
+    depends_on:
+      - redis
+    links:
+      - redis
+  redis:
+    image: redis:6
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
