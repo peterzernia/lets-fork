@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -20,7 +19,7 @@ func main() {
 	}
 
 	pong, err := rdb.Ping().Result()
-	fmt.Println(pong, err)
+	log.Println(pong, err)
 
 	hub := websocket.NewHub()
 	go hub.Run()

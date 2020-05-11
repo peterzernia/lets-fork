@@ -3,16 +3,37 @@ package restaurant
 import (
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v7"
+	"github.com/peterzernia/lets-fork/utils"
 )
 
 func handleGet(c *gin.Context) {
+	var restaurant Restaurant
+	rdb := utils.GetRDB()
 	id := c.Param("id")
+
+	rest, err := rdb.Get(id).Result()
+	if err == nil {
+		err := json.Unmarshal([]byte(rest), &restaurant)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		c.JSON(http.StatusOK, restaurant)
+		return
+	}
+	if err != redis.Nil {
+		log.Println(err)
+	}
 
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", "https://api.yelp.com/v3/businesses/"+id, nil)
@@ -35,14 +56,19 @@ func handleGet(c *gin.Context) {
 	}
 
 	// return json from GET request
-	var resp interface{}
-	err = json.Unmarshal(body, &resp)
+	err = json.Unmarshal(body, &restaurant)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, resp)
+	// Cache restaurant for 24 hours in redis
+	rdb.Set(id, string(body), time.Hour*24)
+	if err != nil {
+		log.Println(err)
+	}
+
+	c.JSON(http.StatusOK, restaurant)
 }
 
 // HandleList ...
