@@ -33,6 +33,7 @@ type Restaurant struct {
 	Photos       []string     `json:"photos"`
 	Price        *string      `json:"price"`
 	Rating       *float64     `json:"rating"`
+	ReviewCount  *int64       `json:"review_count"`
 	Transactions []string     `json:"transactions"`
 	URL          *string      `json:"url"`
 }
