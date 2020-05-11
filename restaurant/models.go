@@ -22,19 +22,19 @@ type Restaurant struct {
 	Categories   []Category   `json:"categories"`
 	Coordinates  *Coordinates `json:"coordinates"`
 	DisplayPhone *string      `json:"display_phone"`
-	// Hours        *Hours       `json:"hours"`
-	ID           *string   `json:"id"`
-	ImageURL     *string   `json:"image_url"`
-	IsClaimed    *bool     `json:"is_claimed"`
-	IsClosed     *bool     `json:"is_closed"`
-	Location     *Location `json:"location"`
-	Name         *string   `json:"name"`
-	Phone        *string   `json:"string"`
-	Photos       []string  `json:"photos"`
-	Price        *string   `json:"price"`
-	Rating       *float64  `json:"rating"`
-	Transactions []string  `json:"transactions"`
-	URL          *string   `json:"url"`
+	Hours        []Hours      `json:"hours"`
+	ID           *string      `json:"id"`
+	ImageURL     *string      `json:"image_url"`
+	IsClaimed    *bool        `json:"is_claimed"`
+	IsClosed     *bool        `json:"is_closed"`
+	Location     *Location    `json:"location"`
+	Name         *string      `json:"name"`
+	Phone        *string      `json:"string"`
+	Photos       []string     `json:"photos"`
+	Price        *string      `json:"price"`
+	Rating       *float64     `json:"rating"`
+	Transactions []string     `json:"transactions"`
+	URL          *string      `json:"url"`
 }
 
 // Category represents a restaurant category
@@ -58,4 +58,19 @@ type Location struct {
 	Country  *string `json:"country"`
 	State    *string `json:"state"`
 	ZipCode  *string `json:"zip_code"`
+}
+
+// Hours represents the hours of a restaurant
+type Hours struct {
+	Open      []Hour  `json:"open"`
+	HoursType *string `json:"hours_type"`
+	IsOpenNow *bool   `json:"is_open_now"`
+}
+
+// Hour represents the open hours of a restaurant for one day of the week
+type Hour struct {
+	IsOvernight *bool   `json:"is_overnight"`
+	Start       *string `json:"start"`
+	End         *string `json:"end"`
+	Day         *int64  `json:"day"`
 }
