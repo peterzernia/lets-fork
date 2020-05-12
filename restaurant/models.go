@@ -2,12 +2,12 @@ package restaurant
 
 // Options represents search options
 type Options struct {
-	Latitude  *float64
-	Longitude *float64
-	Limit     *int64
-	Offset    *int64
-	Radius    *float64
-	Price     []int64
+	Latitude  *float64 `json:"latitude,omitempty"`
+	Longitude *float64 `json:"longitude,omitempty"`
+	Limit     *int64   `json:"limit,omitempty"`
+	Offset    *int64   `json:"offset,omitempty"`
+	Radius    *float64 `json:"radius,omitempty"`
+	Price     []int64  `json:"price,omitempty"`
 }
 
 // SearchResponse represents a response from yelp's search endpoint

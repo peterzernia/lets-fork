@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"strconv"
 
@@ -18,15 +19,11 @@ type options struct {
 	Price     []int64 `json:"price"`
 }
 
-func (h *Hub) handleCreate(message Message, c *Client) *Party {
-	party := Party{
-		Conns: []*websocket.Conn{c.conn},
-	}
+func (h *Hub) handleCreate(message Message, c *Client) (*Party, []*websocket.Conn) {
+	party := Party{}
+
 	id, _ := h.generatePartyID()
 	party.ID = &id
-
-	party.Likes = make(map[*websocket.Conn][]string)
-	party.Likes[c.conn] = []string{}
 
 	party.Matches = []restaurant.Restaurant{}
 
@@ -49,7 +46,7 @@ func (h *Hub) handleCreate(message Message, c *Client) *Party {
 	party.Options = &restaurant.Options{
 		Latitude:  ptr.Float64(lat),
 		Longitude: ptr.Float64(long),
-		Limit:     ptr.Int64(50),
+		Limit:     ptr.Int64(5),
 		Offset:    ptr.Int64(0),
 		Radius:    ptr.Float64(rad),
 		Price:     options.Price,
@@ -58,38 +55,141 @@ func (h *Hub) handleCreate(message Message, c *Client) *Party {
 	party.Status = ptr.String("waiting")
 	c.partyID = party.ID
 
-	parties := append(h.parties, party)
-	h.parties = parties
+	err = setParty(party)
+	if err != nil {
+		log.Println(err)
+	}
 
-	return &party
+	return &party, []*websocket.Conn{c.conn}
 }
 
 func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn) {
 	if id, ok := message.Payload["party_id"].(string); ok {
-		for i, party := range h.parties {
-			if party.ID != nil && *party.ID == id {
-				c.partyID = party.ID
-				conns := append(party.Conns, c.conn)
-				h.parties[i].Conns = conns
-				h.parties[i].Likes[c.conn] = []string{}
+		party, err := getParty(id)
+		if err != nil {
+			log.Println(err)
+		}
 
-				if len(party.Conns) == 1 { // Only the host is in the party
-					search, err := restaurant.HandleList(*party.Options)
+		c.partyID = party.ID
 
-					if err == nil {
-						h.parties[i].Current = search.Businesses
-						h.parties[i].Total = search.Total
-						h.parties[i].Restaurants = search.Businesses
-						h.parties[i].Status = ptr.String("active")
-						return &h.parties[i], h.parties[i].Conns
-					}
-				} else {
-					// Reset matches when new user joins
-					h.parties[i].Matches = []restaurant.Restaurant{}
+		conns := []*websocket.Conn{}
+		for cli := range h.clients {
+			if cli.partyID != nil && *cli.partyID == id {
+				conns = append(conns, cli.conn)
+			}
+		}
+		conns = append(conns, c.conn)
 
-					// Only send to new user
-					return &h.parties[i], []*websocket.Conn{c.conn}
+		if party.Total == nil {
+			search, err := restaurant.HandleList(*party.Options)
+
+			if err == nil {
+				party.Current = search.Businesses
+				party.Total = search.Total
+				party.Restaurants = search.Businesses
+				party.Status = ptr.String("active")
+
+				err = setParty(*party)
+				if err != nil {
+					log.Println(err)
 				}
+
+				return party, conns
+			}
+		} else {
+			// Reset matches when new user joins
+			party.Matches = []restaurant.Restaurant{}
+			fmt.Println(len(conns))
+			if len(conns) == 1 {
+				party.Status = ptr.String("waiting")
+			} else {
+				party.Status = ptr.String("active")
+			}
+
+			err = setParty(*party)
+			if err != nil {
+				log.Println(err)
+			}
+
+			// Only send to new user
+			return party, []*websocket.Conn{c.conn}
+		}
+	}
+
+	return nil, nil
+}
+
+func (h *Hub) handleSwipRight(message Message, c *Client) (*Party, []*websocket.Conn) {
+	if c.partyID != nil {
+		party, err := getParty(*c.partyID)
+		if err != nil {
+			log.Println(err)
+		}
+
+		if id, ok := message.Payload["restaurant_id"].(string); ok {
+			exists := false
+			for _, restaurant := range c.likes {
+				if restaurant == id {
+					exists = true
+				}
+			}
+			if !exists {
+				c.likes = append(c.likes, id)
+			}
+		}
+
+		clients := []Client{}
+		conns := []*websocket.Conn{}
+		for cli := range h.clients {
+			if cli.partyID != nil && *cli.partyID == *c.partyID {
+				clients = append(clients, *cli)
+				conns = append(conns, cli.conn)
+			}
+		}
+
+		matches := party.checkMatches(clients)
+		if matches != nil {
+			party.Matches = matches
+			err = setParty(*party)
+			if err != nil {
+				log.Println(err)
+			}
+
+			return party, conns
+		}
+	}
+
+	return nil, nil
+}
+
+func (h *Hub) handleRequestMore(message Message, c *Client) (*Party, []*websocket.Conn) {
+	if c.partyID != nil {
+		party, err := getParty(*c.partyID)
+		if err != nil {
+			log.Println(err)
+		}
+		// Fetch more restaurants when they have not all been fetched
+		if *party.Total-int64(len(party.Restaurants)) > 0 {
+			party.Options.Offset = ptr.Int64(int64(len(party.Restaurants)))
+			search, err := restaurant.HandleList(*party.Options)
+
+			if err == nil {
+				party.Current = search.Businesses
+				party.Restaurants = append(party.Restaurants, search.Businesses...)
+
+				conns := []*websocket.Conn{}
+				for cli := range h.clients {
+					if cli.partyID != nil && *cli.partyID == *c.partyID {
+						conns = append(conns, cli.conn)
+					}
+				}
+
+				err = setParty(*party)
+				if err != nil {
+					log.Println(err)
+				}
+
+				return party, conns
 			}
 		}
 	}
@@ -97,85 +197,38 @@ func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn)
 	return nil, nil
 }
 
-func (h *Hub) handleSwipRight(message Message, c *Client) *Party {
-	for i, party := range h.parties {
-		if c.partyID != nil && *party.ID == *c.partyID {
-			if id, ok := message.Payload["restaurant_id"].(string); ok {
-				exists := false
-				for _, restaurant := range party.Likes[c.conn] {
-					if restaurant == id {
-						exists = true
-					}
-				}
-				if !exists {
-					h.parties[i].Likes[c.conn] = append(party.Likes[c.conn], id)
-				}
-			}
-
-			matches := party.checkMatches()
-			if matches != nil {
-				h.parties[i].Matches = matches
-				return &h.parties[i]
-			}
-		}
-	}
-
-	return nil
-}
-
-func (h *Hub) handleRequestMore(message Message, c *Client) *Party {
-	for i, party := range h.parties {
-		if c.partyID != nil && *party.ID == *c.partyID {
-			// Fetch more restaurants when they have not all been fetched
-			if *party.Total-int64(len(party.Restaurants)) > 0 {
-				h.parties[i].Options.Offset = ptr.Int64(int64(len(party.Restaurants)))
-				search, err := restaurant.HandleList(*party.Options)
-
-				if err == nil {
-					h.parties[i].Current = search.Businesses
-					h.parties[i].Restaurants = append(party.Restaurants, search.Businesses...)
-					return &h.parties[i]
-				}
-			}
-		}
-	}
-
-	return nil
-}
-
-func (h *Hub) handleQuit(c *Client) *Party {
-	var index int
-	var jndex int
+func (h *Hub) handleQuit(c *Client) (*Party, []*websocket.Conn) {
+	var id string
 	if c.partyID != nil {
-		for i, party := range h.parties {
-			if c.partyID != nil && *party.ID == *c.partyID {
-				index = i
-				for j, conn := range party.Conns {
-					if c.conn == conn {
-						jndex = j
-					}
-				}
-			}
-		}
+		id = *c.partyID
 		c.partyID = nil
-
-		// Remove connection from party
-		h.parties[index].Conns[jndex] = h.parties[index].Conns[len(h.parties[index].Conns)-1]
-		h.parties[index].Conns = h.parties[index].Conns[:len(h.parties[index].Conns)-1]
-
-		// Remove party if no connection
-		if len(h.parties[index].Conns) == 0 {
-			h.parties[index] = h.parties[len(h.parties)-1]
-			h.parties = h.parties[:len(h.parties)-1]
-			return nil
-		}
-
-		if len(h.parties[index].Conns) == 1 {
-			h.parties[index].Status = ptr.String("waiting")
-		}
-
-		return &h.parties[index]
 	}
 
-	return nil
+	conns := []*websocket.Conn{}
+	for cli := range h.clients {
+		if cli.partyID != nil && *cli.partyID == id {
+			conns = append(conns, cli.conn)
+		}
+	}
+
+	if len(conns) == 1 {
+		party, err := getParty(id)
+		if err != nil {
+			log.Println(err)
+		}
+
+		if party == nil {
+			return nil, nil
+		}
+
+		party.Status = ptr.String("waiting")
+		err = setParty(*party)
+		if err != nil {
+			log.Println(err)
+		}
+
+		return party, conns
+	}
+
+	return nil, nil
 }

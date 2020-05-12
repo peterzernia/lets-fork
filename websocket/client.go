@@ -2,7 +2,6 @@ package websocket
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -46,6 +45,7 @@ type Client struct {
 	send chan []byte
 
 	partyID *string
+	likes   []string
 }
 
 func (c *Client) read() {
@@ -77,13 +77,13 @@ func (c *Client) read() {
 		response := Response{}
 		switch message.Type {
 		case "create":
-			party := c.hub.handleCreate(message, c)
+			party, conns := c.hub.handleCreate(message, c)
 			res, err := json.Marshal(party)
 			if err != nil {
 				log.Println(err)
 			}
 			response.Res = res
-			response.Conns = party.Conns
+			response.Conns = conns
 		case "join":
 			party, conns := c.hub.handleJoin(message, c)
 			if conns != nil {
@@ -103,34 +103,34 @@ func (c *Client) read() {
 				response.Conns = []*websocket.Conn{c.conn}
 			}
 		case "swipe-right":
-			party := c.hub.handleSwipRight(message, c)
+			party, conns := c.hub.handleSwipRight(message, c)
 			if party != nil {
 				res, err := json.Marshal(party)
 				if err != nil {
 					log.Println(err)
 				}
 				response.Res = res
-				response.Conns = party.Conns
+				response.Conns = conns
 			}
 		case "request-more":
-			party := c.hub.handleRequestMore(message, c)
+			party, conns := c.hub.handleRequestMore(message, c)
 			if party != nil {
 				res, err := json.Marshal(party)
 				if err != nil {
 					log.Println(err)
 				}
 				response.Res = res
-				response.Conns = party.Conns
+				response.Conns = conns
 			}
 		case "quit":
-			party := c.hub.handleQuit(c)
+			party, conns := c.hub.handleQuit(c)
 			if party != nil {
 				res, err := json.Marshal(party)
 				if err != nil {
 					log.Println(err)
 				}
 				response.Res = res
-				response.Conns = party.Conns
+				response.Conns = conns
 			}
 		default:
 			res := []byte("Unrecognized message type" + message.Type)
@@ -141,7 +141,6 @@ func (c *Client) read() {
 		}
 
 		c.hub.broadcast <- response
-		fmt.Println(len(c.hub.parties))
 	}
 }
 

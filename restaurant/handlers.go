@@ -20,7 +20,7 @@ func handleGet(c *gin.Context) {
 	rdb := utils.GetRDB()
 	id := c.Param("id")
 
-	rest, err := rdb.Get(id).Result()
+	rest, err := rdb.Get("restaurant:" + id).Result()
 	if err == nil {
 		err := json.Unmarshal([]byte(rest), &restaurant)
 		if err != nil {
@@ -67,7 +67,7 @@ func handleGet(c *gin.Context) {
 	}
 
 	// Cache restaurant for 24 hours in redis
-	rdb.Set(id, string(body), time.Hour*24)
+	err = rdb.Set("restaurant:"+id, string(body), time.Hour*24).Err()
 	if err != nil {
 		log.Println(err)
 	}
