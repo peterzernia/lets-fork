@@ -32,10 +32,36 @@ func getParty(id string) (*Party, error) {
 	if err != nil && err != redis.Nil {
 		return nil, err
 	}
-	if err == redis.Nil {
-		return nil, nil
-	}
 
 	err = json.Unmarshal([]byte(p), &party)
 	return &party, err
+}
+
+func setUser(u User) error {
+	rdb := utils.GetRDB()
+
+	jsn, err := json.Marshal(u)
+	if err != nil {
+		return err
+	}
+
+	rdb.Set("user:"+*u.ID, string(jsn), time.Hour)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func getUser(id string) (*User, error) {
+	var user User
+	rdb := utils.GetRDB()
+
+	p, err := rdb.Get("user:" + id).Result()
+
+	if err != nil && err != redis.Nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal([]byte(p), &user)
+	return &user, err
 }

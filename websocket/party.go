@@ -1,6 +1,8 @@
 package websocket
 
 import (
+	"log"
+
 	"github.com/peterzernia/lets-fork/restaurant"
 )
 
@@ -26,7 +28,12 @@ func (p *Party) checkMatches(clients []Client) []restaurant.Restaurant {
 	matches := []restaurant.Restaurant{}
 	counts := make(map[string]int)
 	for _, c := range clients {
-		for _, restaurantID := range c.likes {
+		user, err := getUser(*c.id)
+		if err != nil {
+			log.Println(err)
+		}
+
+		for _, restaurantID := range user.Likes {
 			counts[restaurantID]++
 		}
 	}

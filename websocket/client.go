@@ -45,7 +45,7 @@ type Client struct {
 	send chan []byte
 
 	partyID *string
-	likes   []string
+	id      *string
 }
 
 func (c *Client) read() {
@@ -103,7 +103,7 @@ func (c *Client) read() {
 				response.Conns = []*websocket.Conn{c.conn}
 			}
 		case "swipe-right":
-			party, conns := c.hub.handleSwipRight(message, c)
+			party, conns := c.hub.handleSwipeRight(message, c)
 			if party != nil {
 				res, err := json.Marshal(party)
 				if err != nil {
@@ -187,13 +187,38 @@ func (c *Client) write() {
 
 // Serve handles websocket requests from the peer.
 func serve(hub *Hub, w http.ResponseWriter, r *http.Request) {
+	var id string
 	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	client := &Client{hub: hub, conn: conn, send: make(chan []byte, 256)}
+
+	if len(r.URL.Query()["id"]) > 0 {
+		id = r.URL.Query()["id"][0]
+	}
+
+	// in the case client was disconnected, user will have
+	// been stored in the rdb
+	user, err := getUser(id)
+	if err != nil {
+		log.Println(err)
+	}
+
+	client := &Client{
+		hub:     hub,
+		conn:    conn,
+		send:    make(chan []byte, 256),
+		id:      ptr.String(id),
+		partyID: nil,
+	}
+
+	// return user info from rdb
+	if user != nil {
+		client.partyID = user.PartyID
+	}
+
 	client.hub.register <- client
 
 	// Allow collection of memory referenced by the caller by doing all work in

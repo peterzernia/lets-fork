@@ -2,7 +2,6 @@ package websocket
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"strconv"
 
@@ -60,6 +59,17 @@ func (h *Hub) handleCreate(message Message, c *Client) (*Party, []*websocket.Con
 		log.Println(err)
 	}
 
+	user := User{
+		ID:      c.id,
+		Likes:   []string{},
+		PartyID: party.ID,
+	}
+
+	err = setUser(user)
+	if err != nil {
+		log.Println(err)
+	}
+
 	return &party, []*websocket.Conn{c.conn}
 }
 
@@ -67,7 +77,7 @@ func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn)
 	if id, ok := message.Payload["party_id"].(string); ok {
 		party, err := getParty(id)
 		if err != nil {
-			log.Println(err)
+			return nil, nil
 		}
 
 		c.partyID = party.ID
@@ -78,7 +88,16 @@ func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn)
 				conns = append(conns, cli.conn)
 			}
 		}
-		conns = append(conns, c.conn)
+
+		user := User{
+			ID:      c.id,
+			Likes:   []string{},
+			PartyID: c.partyID,
+		}
+		err = setUser(user)
+		if err != nil {
+			log.Println(err)
+		}
 
 		if party.Total == nil {
 			search, err := restaurant.HandleList(*party.Options)
@@ -99,43 +118,55 @@ func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn)
 		} else {
 			// Reset matches when new user joins
 			party.Matches = []restaurant.Restaurant{}
-			fmt.Println(len(conns))
 			if len(conns) == 1 {
 				party.Status = ptr.String("waiting")
-			} else {
-				party.Status = ptr.String("active")
+
+				err = setParty(*party)
+				if err != nil {
+					log.Println(err)
+				}
+
+				return party, []*websocket.Conn{c.conn}
 			}
+
+			party.Status = ptr.String("active")
 
 			err = setParty(*party)
 			if err != nil {
 				log.Println(err)
 			}
 
-			// Only send to new user
-			return party, []*websocket.Conn{c.conn}
+			return party, conns
 		}
 	}
 
 	return nil, nil
 }
 
-func (h *Hub) handleSwipRight(message Message, c *Client) (*Party, []*websocket.Conn) {
+func (h *Hub) handleSwipeRight(message Message, c *Client) (*Party, []*websocket.Conn) {
 	if c.partyID != nil {
 		party, err := getParty(*c.partyID)
 		if err != nil {
 			log.Println(err)
 		}
 
+		user, err := getUser(*c.id)
+
 		if id, ok := message.Payload["restaurant_id"].(string); ok {
 			exists := false
-			for _, restaurant := range c.likes {
+			for _, restaurant := range user.Likes {
 				if restaurant == id {
 					exists = true
 				}
 			}
 			if !exists {
-				c.likes = append(c.likes, id)
+				user.Likes = append(user.Likes, id)
 			}
+		}
+
+		err = setUser(*user)
+		if err != nil {
+			log.Println(err)
 		}
 
 		clients := []Client{}
