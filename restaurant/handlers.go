@@ -28,8 +28,12 @@ func handleGet(c *gin.Context) {
 			return
 		}
 
-		c.JSON(http.StatusOK, restaurant)
-		return
+		// Sometimes yelp sends bad /GET requests with nil values
+		// that should not be cached
+		if restaurant.Name != nil {
+			c.JSON(http.StatusOK, restaurant)
+			return
+		}
 	}
 	if err != redis.Nil {
 		log.Println(err)
