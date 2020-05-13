@@ -179,7 +179,7 @@ func (h *Hub) handleSwipeRight(message Message, c *Client) (*Party, []*websocket
 		}
 
 		matches := party.checkMatches(clients)
-		if matches != nil {
+		if matches != nil && len(matches) != len(party.Matches) {
 			party.Matches = matches
 			err = setParty(*party)
 			if err != nil {

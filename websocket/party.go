@@ -39,7 +39,7 @@ func (p *Party) checkMatches(clients []Client) []restaurant.Restaurant {
 	}
 
 	for restaurantID, count := range counts {
-		if count == len(clients) {
+		if len(clients) != 1 && count == len(clients) {
 			exists := false
 			for _, match := range matches {
 				if restaurantID == *match.ID {

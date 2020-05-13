@@ -36,16 +36,20 @@ var upgrader = websocket.Upgrader{
 
 // Client is a middleman between the websocket connection and the hub.
 type Client struct {
-	hub *Hub
-
-	// The websocket connection.
+	// The websocket connection
 	conn *websocket.Conn
 
-	// Buffered channel of outbound messages.
+	// The hub
+	hub *Hub
+
+	// The id is the unique device id
+	id *string
+
+	// Buffered channel of outbound messages
 	send chan []byte
 
+	// Party the client is currently in
 	partyID *string
-	id      *string
 }
 
 func (c *Client) read() {

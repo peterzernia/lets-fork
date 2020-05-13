@@ -6,20 +6,20 @@ import (
 
 // Hub ...
 type Hub struct {
-	// Registered clients.
-	clients map[*Client]bool
-
-	// Inbound messages from the clients.
+	// Inbound messages from the clients
 	broadcast chan Response
 
-	// Register requests from the clients.
+	// Registered clients
+	clients map[*Client]bool
+
+	// Active parties
+	parties []Party
+
+	// Register requests from the clients
 	register chan *Client
 
-	// Unregister requests from clients.
+	// Unregister requests from clients
 	unregister chan *Client
-
-	// Keep track of all the live parties
-	parties []Party
 }
 
 // NewHub creates a new hub
