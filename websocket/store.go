@@ -29,7 +29,7 @@ func getParty(id string) (*Party, error) {
 
 	p, err := rdb.Get("party:" + id).Result()
 
-	if err != nil && err != redis.Nil {
+	if err != nil {
 		return nil, err
 	}
 

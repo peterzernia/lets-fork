@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"github.com/go-redis/redis/v7"
 	"github.com/gorilla/websocket"
 	"github.com/peterzernia/lets-fork/utils"
 )
@@ -95,8 +96,8 @@ func (h *Hub) generatePartyID() (string, error) {
 
 	id := string(bytes)
 
-	party, err := getParty(id)
-	if party != nil {
+	_, err = getParty(id)
+	if err != redis.Nil {
 		id, err = h.generatePartyID()
 		if err != nil {
 			return "", err
