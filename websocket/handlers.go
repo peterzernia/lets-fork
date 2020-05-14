@@ -45,7 +45,7 @@ func (h *Hub) handleCreate(message Message, c *Client) (*Party, []*websocket.Con
 	party.Options = &restaurant.Options{
 		Latitude:  ptr.Float64(lat),
 		Longitude: ptr.Float64(long),
-		Limit:     ptr.Int64(5),
+		Limit:     ptr.Int64(50),
 		Offset:    ptr.Int64(0),
 		Radius:    ptr.Float64(rad),
 		Price:     options.Price,
@@ -199,8 +199,9 @@ func (h *Hub) handleRequestMore(message Message, c *Client) (*Party, []*websocke
 		if err != nil {
 			log.Println(err)
 		}
+
 		// Fetch more restaurants when they have not all been fetched
-		if *party.Total-int64(len(party.Restaurants)) > 0 {
+		if party.Total != nil && *party.Total-int64(len(party.Restaurants)) > 0 {
 			party.Options.Offset = ptr.Int64(int64(len(party.Restaurants)))
 			search, err := restaurant.HandleList(*party.Options)
 
