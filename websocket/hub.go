@@ -13,9 +13,6 @@ type Hub struct {
 	// Registered clients
 	clients map[*Client]bool
 
-	// Active parties
-	parties []Party
-
 	// Register requests from the clients
 	register chan *Client
 
@@ -30,7 +27,6 @@ func NewHub() *Hub {
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		clients:    make(map[*Client]bool),
-		parties:    []Party{},
 	}
 }
 
@@ -98,14 +94,12 @@ func (h *Hub) generatePartyID() (string, error) {
 	}
 
 	id := string(bytes)
-	for _, party := range h.parties {
-		// Check to make sure id doesn't exist
-		// and run generatePartyID again if it does
-		if id == *party.ID {
-			id, err = h.generatePartyID()
-			if err != nil {
-				return "", err
-			}
+
+	party, err := getParty(id)
+	if party != nil {
+		id, err = h.generatePartyID()
+		if err != nil {
+			return "", err
 		}
 	}
 
