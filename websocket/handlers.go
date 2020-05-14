@@ -80,14 +80,9 @@ func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn)
 			return nil, nil
 		}
 
-		c.partyID = party.ID
+		c.partyID = ptr.String(id)
 
-		conns := []*websocket.Conn{}
-		for cli := range h.clients {
-			if cli.partyID != nil && *cli.partyID == id {
-				conns = append(conns, cli.conn)
-			}
-		}
+		conns := h.getConnections(id)
 
 		user := User{
 			ID:      c.id,
@@ -169,12 +164,12 @@ func (h *Hub) handleSwipeRight(message Message, c *Client) (*Party, []*websocket
 			log.Println(err)
 		}
 
+		conns := h.getConnections(*c.partyID)
+
 		clients := []Client{}
-		conns := []*websocket.Conn{}
 		for cli := range h.clients {
 			if cli.partyID != nil && *cli.partyID == *c.partyID {
 				clients = append(clients, *cli)
-				conns = append(conns, cli.conn)
 			}
 		}
 
@@ -209,12 +204,7 @@ func (h *Hub) handleRequestMore(message Message, c *Client) (*Party, []*websocke
 				party.Current = search.Businesses
 				party.Restaurants = append(party.Restaurants, search.Businesses...)
 
-				conns := []*websocket.Conn{}
-				for cli := range h.clients {
-					if cli.partyID != nil && *cli.partyID == *c.partyID {
-						conns = append(conns, cli.conn)
-					}
-				}
+				conns := h.getConnections(*c.partyID)
 
 				err = setParty(*party)
 				if err != nil {
@@ -236,12 +226,7 @@ func (h *Hub) handleQuit(c *Client) (*Party, []*websocket.Conn) {
 		c.partyID = nil
 	}
 
-	conns := []*websocket.Conn{}
-	for cli := range h.clients {
-		if cli.partyID != nil && *cli.partyID == id {
-			conns = append(conns, cli.conn)
-		}
-	}
+	conns := h.getConnections(id)
 
 	if len(conns) == 1 {
 		party, err := getParty(id)

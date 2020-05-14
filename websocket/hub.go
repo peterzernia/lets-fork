@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"github.com/gorilla/websocket"
 	"github.com/peterzernia/lets-fork/utils"
 )
 
@@ -60,6 +61,29 @@ func (h *Hub) Run() {
 			}
 		}
 	}
+}
+
+// Returns the list of connections associated with a party
+func (h *Hub) getConnections(partyID string) []*websocket.Conn {
+	ids := []string{}
+	conns := []*websocket.Conn{}
+	for cli := range h.clients {
+		if cli.partyID != nil && *cli.partyID == partyID {
+			// skip duplicates
+			skip := false
+			for _, id := range ids {
+				if *cli.id == id {
+					skip = true
+				}
+			}
+			if !skip {
+				conns = append(conns, cli.conn)
+				ids = append(ids, *cli.id)
+			}
+		}
+	}
+
+	return conns
 }
 
 // generatePartyID returns a random 6 digit number as string.
