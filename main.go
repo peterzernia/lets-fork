@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/peterzernia/lets-fork/restaurant"
 	"github.com/peterzernia/lets-fork/utils"
@@ -37,6 +38,11 @@ func main() {
 	websocket.InitializeRoutes(api, hub)
 	api.GET("/health", func(c *gin.Context) {
 		c.Status(http.StatusOK)
+	})
+
+	router.Use(static.Serve("/", static.LocalFile("./public", true)))
+	router.GET("", func(c *gin.Context) {
+		c.File("./public/index.html")
 	})
 
 	port := ":" + os.Getenv("PORT")
