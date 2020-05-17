@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/go-redis/redis/v7"
 	"github.com/peterzernia/lets-fork/utils"
 )
 
@@ -58,7 +57,7 @@ func getUser(id string) (*User, error) {
 
 	p, err := rdb.Get("user:" + id).Result()
 
-	if err != nil && err != redis.Nil {
+	if err != nil {
 		return nil, err
 	}
 
