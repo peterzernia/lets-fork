@@ -98,7 +98,7 @@ func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn)
 			search, err := restaurant.HandleList(*party.Options)
 
 			if err == nil {
-				party.Current = search.Businesses
+				party.Current = h.shuffle(search.Businesses)
 				party.Total = search.Total
 				party.Restaurants = search.Businesses
 				party.Status = ptr.String("active")
@@ -201,8 +201,9 @@ func (h *Hub) handleRequestMore(message Message, c *Client) (*Party, []*websocke
 			search, err := restaurant.HandleList(*party.Options)
 
 			if err == nil {
-				party.Current = search.Businesses
-				party.Restaurants = append(party.Restaurants, search.Businesses...)
+				current := h.shuffle(search.Businesses)
+				party.Current = current
+				party.Restaurants = append(party.Restaurants, current...)
 
 				conns := h.getConnections(*c.partyID)
 

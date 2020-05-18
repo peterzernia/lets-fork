@@ -1,8 +1,12 @@
 package websocket
 
 import (
+	"math/rand"
+	"time"
+
 	"github.com/go-redis/redis/v7"
 	"github.com/gorilla/websocket"
+	"github.com/peterzernia/lets-fork/restaurant"
 	"github.com/peterzernia/lets-fork/utils"
 )
 
@@ -105,4 +109,16 @@ func (h *Hub) generatePartyID() (string, error) {
 	}
 
 	return id, nil
+}
+
+func (h *Hub) shuffle(rest []restaurant.Restaurant) []restaurant.Restaurant {
+	rand.Seed(time.Now().UnixNano())
+
+	n := len(rest)
+	for i := 0; i < n; i++ {
+		r := i + rand.Intn(n-i)
+		rest[r], rest[i] = rest[i], rest[r]
+	}
+
+	return rest
 }

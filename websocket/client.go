@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-redis/redis/v7"
 	"github.com/gorilla/websocket"
 	"github.com/peterzernia/lets-fork/ptr"
 )
@@ -206,7 +207,7 @@ func serve(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	// in the case client was disconnected, user will have
 	// been stored in the rdb
 	user, err := getUser(id)
-	if err != nil {
+	if err != nil && err != redis.Nil {
 		log.Println(err)
 	}
 
