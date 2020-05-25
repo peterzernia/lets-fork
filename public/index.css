@@ -1,0 +1,72 @@
+a {
+    cursor: pointer;
+}
+
+.header {
+    font-family: 'Varela Round', sans-serif;
+    font-size: 58px;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 32px;
+}
+
+.header-text {
+    padding-top: 6px;
+}
+
+.icon {
+    padding-right: 8px;
+    height: 48px;
+    width: 48px;
+}
+
+
+@media only screen and (max-width: 448px) {
+    .header {
+      font-size: 38px;
+    }
+}
+
+
+@media only screen and (max-width: 448px) {
+    .icon {
+        height: 32px;
+        width: 32px;
+    }
+}
+
+.info {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 500px;
+    margin: 0px 108px;
+}
+
+@media only screen and (max-width: 448px) {
+    .info {
+        display: block;
+        width: 100%;
+        margin: auto;
+        text-align: center;
+    }
+}
+
+
+.phone {
+    width: 200px;
+    height: auto;
+}
+
+.apple {
+    width: 200px;
+    height: auto;
+    padding: 16px;
+}
+
+.google {
+    width: 232px;
+    height: auto;
+}
