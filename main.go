@@ -41,8 +41,8 @@ func main() {
 	})
 
 	router.Use(static.Serve("/", static.LocalFile("./public", true)))
-	router.GET("", func(c *gin.Context) {
-		c.File("./public/index.html")
+	router.GET("/party/:id", func(c *gin.Context) {
+		c.File("./public/party/index.html")
 	})
 
 	port := ":" + os.Getenv("PORT")

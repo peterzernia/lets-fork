@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        var url = window.location.href;
+        var id = url.substring(url.length - 6, url.length);
+        // dev url: exp://192.168.178.25:19000/+
+        window.location.replace("letsfork://party/" + id);
+
+        setTimeout(function() {
+        // Link back to to the home page -- only fires if deep link fails                
+        window.location.replace("https://letsfork.app");
+        }, 500);
+    </script>
+</head>
+</html>
