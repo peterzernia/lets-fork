@@ -12,10 +12,11 @@ import (
 
 // golang cannot unmarshal json into float fields
 type options struct {
-	Latitude  string  `json:"latitude"`
-	Longitude string  `json:"longitude"`
-	Radius    string  `json:"radius"`
-	Price     []int64 `json:"price"`
+	Categories *string `json:"categories"`
+	Latitude   string  `json:"latitude"`
+	Longitude  string  `json:"longitude"`
+	Radius     string  `json:"radius"`
+	Price      []int64 `json:"price"`
 }
 
 func (h *Hub) handleCreate(message Message, c *Client) (*Party, []*websocket.Conn) {
@@ -43,12 +44,13 @@ func (h *Hub) handleCreate(message Message, c *Client) (*Party, []*websocket.Con
 	rad, _ := strconv.ParseFloat(options.Radius, 64)
 
 	party.Options = &restaurant.Options{
-		Latitude:  ptr.Float64(lat),
-		Longitude: ptr.Float64(long),
-		Limit:     ptr.Int64(50),
-		Offset:    ptr.Int64(0),
-		Radius:    ptr.Float64(rad),
-		Price:     options.Price,
+		Categories: options.Categories,
+		Latitude:   ptr.Float64(lat),
+		Longitude:  ptr.Float64(long),
+		Limit:      ptr.Int64(50),
+		Offset:     ptr.Int64(0),
+		Radius:     ptr.Float64(rad),
+		Price:      options.Price,
 	}
 
 	party.Status = ptr.String("waiting")
