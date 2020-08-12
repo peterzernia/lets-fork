@@ -75,7 +75,8 @@ func handleGet(c *gin.Context) {
 	c.JSON(http.StatusOK, restaurant)
 }
 
-// HandleList ...
+// HandleList calls the yelp api to return a list of restaurants
+// based on the options passed in
 func HandleList(options Options) (*SearchResponse, error) {
 	search := SearchResponse{}
 	client := &http.Client{}
