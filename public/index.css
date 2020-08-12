@@ -70,3 +70,22 @@ a {
     width: 232px;
     height: auto;
 }
+
+.video-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.video {
+    width: 560px;
+    height: 315px;
+}
+
+@media only screen and (max-width: 560px) {
+    .video {
+      width: 95%;
+    }
+}
