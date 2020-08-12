@@ -9,11 +9,17 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
+      # checkout
       - uses: actions/checkout@v2
-      # test
-      - run: touch .env
-      - run: make lint
-      - run: make test
+      # lint & test
+      - name: Run lint & test
+        env:
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+        run: |
+          echo REDIS_URL=redis://:@redis >> .env
+          echo API_TOKEN="$API_TOKEN" >> .env
+          make lint
+          make test
       # deploy
       - uses: akhileshns/heroku-deploy@v3.0.4
         with:
