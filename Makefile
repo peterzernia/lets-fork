@@ -13,7 +13,7 @@ lint:
 .PHONY: lint
 
 test:
-	$(dc) run --rm lets-fork go test -v ./...
+	$(dc) run --rm lets-fork go test ./...
 .PHONY: test
 
 lets-fork:

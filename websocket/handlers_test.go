@@ -9,7 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestHandleCreate(t *testing.T) {
+func TestHandlersIntegration(t *testing.T) {
+	// Test handleCreate
 	require := assert.New(t)
 
 	_, err := utils.InitRDB()
@@ -20,18 +21,45 @@ func TestHandleCreate(t *testing.T) {
 
 	conn := &websocket.Conn{}
 
+	payload := make(map[string]interface{})
+	payload["categories"] = "restaurants"
+	payload["latitude"] = "52.52"
+	payload["longitude"] = "13.40"
+	payload["radius"] = "5000"
+
 	message := Message{
 		Type:    "create",
-		Payload: make(map[string]interface{}),
+		Payload: payload,
 	}
 
 	client := Client{
 		conn: conn,
 		id:   ptr.String("1"),
 	}
+	hub.register <- &client
 
 	party, conns := hub.handleCreate(message, &client)
 	require.NotNil(party.ID)
 	require.Equal(*party.Status, "waiting")
 	require.Equal(conns[0], conn)
+
+	//////////////////////////////////////////////////
+	// Test handleJoin
+	connTwo := &websocket.Conn{}
+	clientTwo := Client{
+		conn: connTwo,
+		id:   ptr.String("2"),
+	}
+	hub.register <- &clientTwo
+
+	message.Type = "join"
+	payload = make(map[string]interface{})
+	payload["party_id"] = *party.ID
+	message.Payload = payload
+
+	party, conns = hub.handleJoin(message, &clientTwo)
+	require.Equal(*party.Status, "active")
+	require.Equal(len(conns), 2)
+	require.Contains(conns, conn)
+	require.Contains(conns, connTwo)
 }
