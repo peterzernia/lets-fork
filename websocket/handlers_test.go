@@ -92,4 +92,37 @@ func TestHandlersIntegration(t *testing.T) {
 	party, conns = hub.handleRequestMore(message, &client)
 	require.Greater(len(party.Restaurants), len(restaurants))
 	require.NotNil(conns)
+
+	//////////////////////////////////////////////////
+	// Test handleQuit
+	party, conns = hub.handleQuit(&clientTwo)
+	require.Equal(len(conns), 1)
+	require.Nil(clientTwo.partyID)
+	require.Equal(*party.Status, "waiting")
+
+	// rejoining should cause the matches to be cleared
+	message.Type = "join"
+	payload = make(map[string]interface{})
+	payload["party_id"] = *party.ID
+	message.Payload = payload
+
+	party, conns = hub.handleJoin(message, &clientTwo)
+	require.Equal(*party.Status, "active")
+	require.Equal(len(conns), 2)
+	require.Contains(conns, conn)
+	require.Contains(conns, connTwo)
+	require.NotNil(clientTwo.partyID)
+	require.Equal(len(party.Matches), 0)
+
+	// swiping right with clientTwo should cause
+	// a match because the first clients swipe is saved
+	message.Type = "swipe-right"
+	payload = make(map[string]interface{})
+	payload["restaurant_id"] = *id
+	message.Payload = payload
+
+	party, conns = hub.handleSwipeRight(message, &clientTwo)
+	require.NotEmpty(party.Matches)
+	require.Equal(*party.Matches[0].ID, *id)
+	require.NotNil(conns)
 }
