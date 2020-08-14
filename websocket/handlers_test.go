@@ -62,4 +62,23 @@ func TestHandlersIntegration(t *testing.T) {
 	require.Equal(len(conns), 2)
 	require.Contains(conns, conn)
 	require.Contains(conns, connTwo)
+
+	//////////////////////////////////////////////////
+	// Test handleSwipeRight
+	require.Empty(party.Matches)
+
+	id := party.Restaurants[0].ID
+	message.Type = "join"
+	payload = make(map[string]interface{})
+	payload["restaurant_id"] = *id
+	message.Payload = payload
+
+	// initially nothing is returned as it is not a match yet
+	party, conns = hub.handleSwipeRight(message, &client)
+	require.Nil(party)
+	require.Nil(conns)
+
+	party, conns = hub.handleSwipeRight(message, &clientTwo)
+	require.NotEmpty(party.Matches)
+	require.Equal(*party.Matches[0].ID, *id)
 }
