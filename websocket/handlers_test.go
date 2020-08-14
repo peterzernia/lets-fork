@@ -68,7 +68,7 @@ func TestHandlersIntegration(t *testing.T) {
 	require.Empty(party.Matches)
 
 	id := party.Restaurants[0].ID
-	message.Type = "join"
+	message.Type = "swipe-right"
 	payload = make(map[string]interface{})
 	payload["restaurant_id"] = *id
 	message.Payload = payload
@@ -81,4 +81,15 @@ func TestHandlersIntegration(t *testing.T) {
 	party, conns = hub.handleSwipeRight(message, &clientTwo)
 	require.NotEmpty(party.Matches)
 	require.Equal(*party.Matches[0].ID, *id)
+	require.NotNil(conns)
+
+	//////////////////////////////////////////////////
+	// Test handleRequestMore
+	restaurants := party.Restaurants
+	message.Type = "request-more"
+	message.Payload = nil
+
+	party, conns = hub.handleRequestMore(message, &client)
+	require.Greater(len(party.Restaurants), len(restaurants))
+	require.NotNil(conns)
 }
