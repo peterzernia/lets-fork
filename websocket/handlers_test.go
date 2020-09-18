@@ -25,6 +25,7 @@ func TestHandlersIntegration(t *testing.T) {
 	payload["categories"] = "restaurants"
 	payload["latitude"] = "52.52"
 	payload["longitude"] = "13.40"
+	payload["open_now"] = true
 	payload["radius"] = "5000"
 
 	message := Message{

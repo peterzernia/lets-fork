@@ -96,7 +96,14 @@ func HandleList(options Options) (*SearchResponse, error) {
 	} else {
 		q.Add("categories", "restaurants")
 	}
-	q.Add("open_now", "true")
+
+	// Default to currently open restaurants
+	if options.OpenNow != nil {
+		q.Add("open_now", strconv.FormatBool(*options.OpenNow))
+	} else {
+		q.Add("open_now", "true")
+	}
+
 	q.Add("latitude", strconv.FormatFloat(*options.Latitude, 'f', -1, 64))
 	q.Add("longitude", strconv.FormatFloat(*options.Longitude, 'f', -1, 64))
 	q.Add("limit", strconv.FormatInt(*options.Limit, 10))

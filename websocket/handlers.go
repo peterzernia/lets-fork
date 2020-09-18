@@ -15,8 +15,9 @@ type options struct {
 	Categories *string `json:"categories"`
 	Latitude   string  `json:"latitude"`
 	Longitude  string  `json:"longitude"`
-	Radius     string  `json:"radius"`
+	OpenNow    *bool   `json:"open_now"`
 	Price      []int64 `json:"price"`
+	Radius     string  `json:"radius"`
 }
 
 func (h *Hub) handleCreate(message Message, c *Client) (*Party, []*websocket.Conn) {
@@ -49,8 +50,9 @@ func (h *Hub) handleCreate(message Message, c *Client) (*Party, []*websocket.Con
 		Longitude:  ptr.Float64(long),
 		Limit:      ptr.Int64(50),
 		Offset:     ptr.Int64(0),
-		Radius:     ptr.Float64(rad),
+		OpenNow:    options.OpenNow,
 		Price:      options.Price,
+		Radius:     ptr.Float64(rad),
 	}
 
 	party.Status = ptr.String("waiting")
@@ -100,7 +102,8 @@ func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn)
 			search, err := restaurant.HandleList(*party.Options)
 
 			if err == nil {
-				party.Current = h.shuffle(search.Businesses)
+				// party.Current = h.shuffle(search.Businesses)
+				party.Current = search.Businesses
 				party.Total = search.Total
 				party.Restaurants = search.Businesses
 				party.Status = ptr.String("active")
