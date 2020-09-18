@@ -102,8 +102,7 @@ func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn)
 			search, err := restaurant.HandleList(*party.Options)
 
 			if err == nil {
-				// party.Current = h.shuffle(search.Businesses)
-				party.Current = search.Businesses
+				party.Current = h.shuffle(search.Businesses)
 				party.Total = search.Total
 				party.Restaurants = search.Businesses
 				party.Status = ptr.String("active")
