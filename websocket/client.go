@@ -89,6 +89,14 @@ func (c *Client) read() {
 			}
 			response.Res = res
 			response.Conns = conns
+		case "start-swiping":
+			party, conns := c.hub.handleStartSwiping(c)
+			res, err := json.Marshal(party)
+			if err != nil {
+				log.Println(err)
+			}
+			response.Res = res
+			response.Conns = conns
 		case "join":
 			party, conns := c.hub.handleJoin(message, c)
 			if conns != nil {
@@ -128,15 +136,7 @@ func (c *Client) read() {
 				response.Conns = conns
 			}
 		case "quit":
-			party, conns := c.hub.handleQuit(c)
-			if party != nil {
-				res, err := json.Marshal(party)
-				if err != nil {
-					log.Println(err)
-				}
-				response.Res = res
-				response.Conns = conns
-			}
+			c.hub.handleQuit(c)
 		default:
 			res := []byte("Unrecognized message type" + message.Type)
 			log.Println("Unrecognized message type" + message.Type)

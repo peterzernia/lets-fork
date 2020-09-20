@@ -77,6 +77,34 @@ func (h *Hub) handleCreate(message Message, c *Client) (*Party, []*websocket.Con
 	return &party, []*websocket.Conn{c.conn}
 }
 
+func (h *Hub) handleStartSwiping(c *Client) (*Party, []*websocket.Conn) {
+	if c.partyID != nil {
+		party, err := getParty(*c.partyID)
+		if err != nil {
+			log.Println(err)
+		}
+
+		if party.Total == nil {
+			search, err := restaurant.HandleList(*party.Options)
+
+			if err == nil {
+				party.Current = h.shuffle(search.Businesses)
+				party.Total = search.Total
+				party.Restaurants = search.Businesses
+				party.Status = ptr.String("active")
+
+				err = setParty(*party)
+				if err != nil {
+					log.Println(err)
+				}
+
+				return party, []*websocket.Conn{c.conn}
+			}
+		}
+	}
+	return nil, nil
+}
+
 func (h *Hub) handleJoin(message Message, c *Client) (*Party, []*websocket.Conn) {
 	if id, ok := message.Payload["party_id"].(string); ok {
 		party, err := getParty(id)
@@ -224,33 +252,8 @@ func (h *Hub) handleRequestMore(message Message, c *Client) (*Party, []*websocke
 	return nil, nil
 }
 
-func (h *Hub) handleQuit(c *Client) (*Party, []*websocket.Conn) {
-	var id string
+func (h *Hub) handleQuit(c *Client) {
 	if c.partyID != nil {
-		id = *c.partyID
 		c.partyID = nil
 	}
-
-	conns := h.getConnections(id)
-
-	if len(conns) == 1 {
-		party, err := getParty(id)
-		if err != nil {
-			log.Println(err)
-		}
-
-		if party == nil {
-			return nil, nil
-		}
-
-		party.Status = ptr.String("waiting")
-		err = setParty(*party)
-		if err != nil {
-			log.Println(err)
-		}
-
-		return party, conns
-	}
-
-	return nil, nil
 }

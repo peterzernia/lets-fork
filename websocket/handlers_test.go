@@ -45,6 +45,13 @@ func TestHandlersIntegration(t *testing.T) {
 	require.Equal(conns[0], conn)
 
 	//////////////////////////////////////////////////
+	// Test handleStartSwiping
+	party, conns = hub.handleStartSwiping(&client)
+	require.Equal(*party.Status, "active")
+	require.Contains(conns, conn)
+	require.NotNil(party.Current)
+
+	//////////////////////////////////////////////////
 	// Test handleJoin
 	connTwo := &websocket.Conn{}
 	clientTwo := Client{
@@ -96,10 +103,10 @@ func TestHandlersIntegration(t *testing.T) {
 
 	//////////////////////////////////////////////////
 	// Test handleQuit
-	party, conns = hub.handleQuit(&clientTwo)
+	hub.handleQuit(&clientTwo)
+	conns = hub.getConnections(*party.ID)
 	require.Equal(len(conns), 1)
 	require.Nil(clientTwo.partyID)
-	require.Equal(*party.Status, "waiting")
 
 	// rejoining should cause the matches to be cleared
 	message.Type = "join"
