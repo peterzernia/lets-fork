@@ -7,6 +7,6 @@ require (
 	github.com/gin-gonic/contrib v0.0.0-20191209060500-d6e26eeaa607
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-redis/redis/v7 v7.2.0
-	github.com/gorilla/websocket v1.4.2
+	github.com/gorilla/websocket v1.5.0
 	github.com/stretchr/testify v1.6.1
 )
