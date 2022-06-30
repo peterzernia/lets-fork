@@ -8,5 +8,5 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-redis/redis/v7 v7.2.0
 	github.com/gorilla/websocket v1.4.2
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.8.0
 )
